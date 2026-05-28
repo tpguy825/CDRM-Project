@@ -6,7 +6,7 @@ import yaml
 from pyplayready.device import Device as PlayReadyDevice
 from pyplayready.cdm import Cdm as PlayReadyCDM
 from pyplayready import PSSH as PlayReadyPSSH
-from pyplayready.exceptions import (InvalidSession, TooManySessions, InvalidLicense, InvalidPssh)
+from pyplayready.misc.exceptions import (InvalidSession, TooManySessions, InvalidLicense, InvalidPssh)
 from custom_functions.database.user_db import fetch_username_by_api_key
 from custom_functions.decrypt.api_decrypt import is_base64
 from custom_functions.user_checks.device_allowed import user_allowed_to_use_device
