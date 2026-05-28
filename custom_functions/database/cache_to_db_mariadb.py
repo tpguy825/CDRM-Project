@@ -70,13 +70,24 @@ def search_by_pssh_or_kid(search_filter):
     try:
         with mysql.connector.connect(**get_db_config()) as conn:
             cursor = conn.cursor()
-            like_filter = f"%{search_filter}%"
+            if search_filter.lower().startswith("kid:"):
+                value = search_filter[4:]
+                
+                cursor.execute('SELECT PSSH, KID, `Key` FROM licenses WHERE KID = %s', (value,))
+                results.update(cursor.fetchall())
+            elif search_filter.lower().startswith("pssh:"):
+                value = search_filter[5:]
 
-            cursor.execute('SELECT PSSH, KID, `Key` FROM licenses WHERE PSSH LIKE %s', (like_filter,))
-            results.update(cursor.fetchall())
+                cursor.execute('SELECT PSSH, KID, `Key` FROM licenses WHERE PSSH LIKE %s', (f"%{value}%",))
+                results.update(cursor.fetchall())
+            else:
+                like_filter = f"%{search_filter}%"
 
-            cursor.execute('SELECT PSSH, KID, `Key` FROM licenses WHERE KID LIKE %s', (like_filter,))
-            results.update(cursor.fetchall())
+                cursor.execute('SELECT PSSH, KID, `Key` FROM licenses WHERE PSSH LIKE %s', (like_filter,))
+                results.update(cursor.fetchall())
+
+                cursor.execute('SELECT PSSH, KID, `Key` FROM licenses WHERE KID LIKE %s', (like_filter,))
+                results.update(cursor.fetchall())
 
         final_results = [{'PSSH': row[0], 'KID': row[1], 'Key': row[2]} for row in results]
         return final_results[:20]

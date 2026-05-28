@@ -23,6 +23,10 @@ def pip_check():
         exit("Pip is not installed")
 
 def venv_check():
+    # hacky fix
+    return # skip, this should be run from Docker
+
+
     # Check if we're already inside a virtual environment
     if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
         return

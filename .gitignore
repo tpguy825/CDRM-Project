@@ -8,3 +8,5 @@ build
 main.spec
 pyinstallericon.ico
 icon.ico
+node_modules
+venv

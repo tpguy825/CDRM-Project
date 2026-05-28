@@ -43,21 +43,28 @@ def search_by_pssh_or_kid(search_filter):
         # Initialize a set to store unique matching records
         results = set()
 
-        # Search for records where PSSH contains the search_filter
-        cursor.execute('''
-        SELECT * FROM licenses WHERE PSSH LIKE ?
-        ''', ('%' + search_filter + '%',))
-        rows = cursor.fetchall()
-        for row in rows:
-            results.add((row[1], row[2], row[3]))  # (PSSH, KID, Key)
+        if search_filter.lower().startswith("kid:"):
+            value = search_filter[4:]
 
-        # Search for records where KID contains the search_filter
-        cursor.execute('''
-        SELECT * FROM licenses WHERE KID LIKE ?
-        ''', ('%' + search_filter + '%',))
-        rows = cursor.fetchall()
-        for row in rows:
-            results.add((row[1], row[2], row[3]))  # (PSSH, KID, Key)
+            # Search for records where KID matches the operator value
+            cursor.execute('SELECT PSSH, KID, `Key` FROM licenses WHERE KID = ?', (value,))
+            results.update(cursor.fetchall())
+        elif search_filter.lower().startswith("pssh:"):
+            value = search_filter[5:]
+
+            # Search for records where PSSH contains the operator
+            cursor.execute('SELECT PSSH, KID, `Key` FROM licenses WHERE PSSH LIKE ?', (f"%{value}%",))
+            results.update(cursor.fetchall())
+        else:
+            like_filter = f"%{search_filter}%"
+
+            # Search for records where PSSH contains the search_filter
+            cursor.execute('SELECT PSSH, KID, `Key` FROM licenses WHERE PSSH LIKE ?', (like_filter,))
+            results.update(cursor.fetchall())
+
+            # Search for records where KID contains the search_filter
+            cursor.execute('SELECT PSSH, KID, `Key` FROM licenses WHERE KID LIKE ?', (like_filter,))
+            results.update(cursor.fetchall())
 
         # Convert the set of results to a list of dictionaries for output
         final_results = [{'PSSH': result[0], 'KID': result[1], 'Key': result[2]} for result in results]

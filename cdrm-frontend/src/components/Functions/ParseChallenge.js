@@ -110,7 +110,9 @@ function encodeUtf16LE(str) {
 	return buffer;
 }
 
+/** @param {Uint8Array | string} string */
 function stringToUint8Array(string) {
+	if (string instanceof Uint8Array) return string;
 	return Uint8Array.from(string.split("").map((x) => x.charCodeAt()));
 }
 
@@ -131,13 +133,14 @@ export async function readTextFromClipboard() {
 	}
 }
 
-export function parsePasted(text) {
-	const result = parseFetch(text);
+/** @param {(text: string) => {body:Uint8Array|string|null,method: string,url:string,headers:Record<string,string>}} fetchParser */
+export function parsePasted(text, fetchParser = parseFetch) {
+	const result = fetchParser(text);
 
 	let pssh_data_string;
 	let payload_string;
 
-	if (result.body.startsWith("<")) {
+	if (typeof result.body == "string" && result.body.startsWith("<")) {
 		// If body starts with "<", process it as PlayReady content
 		payload_string = result.body;
 		const wrmHeaderMatch = payload_string.match(/.*(<WRMHEADER.*<\/WRMHEADER>).*/);
@@ -147,7 +150,7 @@ export function parsePasted(text) {
 		pssh_data_string = psshDataToPsshBoxB64(playreadyHeader, PLAYREADY_SYSTEM_ID);
 	} else {
 		// If body is in a different format, process as Widevine content
-		const uint8Array = stringToUint8Array(result.body);
+		const uint8Array = stringToUint8Array(result.body ?? "");
 		let signed_message;
 		let license_request;
 		try {
