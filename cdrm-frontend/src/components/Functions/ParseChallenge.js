@@ -133,7 +133,11 @@ export async function readTextFromClipboard() {
 	}
 }
 
-/** @param {(text: string) => {body:Uint8Array|string|null,method: string,url:string,headers:Record<string,string>}} fetchParser */
+/**
+ * strangeness for backwards compatibility
+ * @template T
+ * @param {T} text
+ * @param {(text: T) => {body:Uint8Array|string|null,method: string,url:string,headers:Record<string,string>}} fetchParser */
 export function parsePasted(text, fetchParser = parseFetch) {
 	const result = fetchParser(text);
 
